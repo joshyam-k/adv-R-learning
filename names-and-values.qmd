@@ -1,0 +1,76 @@
+---
+title: "Names and Values"
+format: html
+editor: visual
+---
+
+```{r}
+library(lobstr)
+```
+
+```{r}
+x <- c(1, 2, 3)
+```
+
+R does two things in the above line - creating an object, a vector of values - binding that object to a name, `x`
+
+The object, or value, doesn't have a name, it's the name that has a value. So you can think of a name as a reference for a value.
+
+So when we run
+
+```{r}
+y <- x
+```
+
+we don't get a new copy of the object, but a second binding to that original object, we can verify this by looking at the object address.
+
+```{r}
+obj_addr(x) == obj_addr(y)
+```
+
+## Exercises
+
+#### 1
+
+Explain the relationship between a, b, c and d in the following code:
+
+```{r}
+a <- 1:10
+b <- a
+c <- b
+d <- 1:10
+```
+
+a, b, and c are all references to the same object, but d is a reference to an object with the same values but with a different address.
+
+#### 2
+
+The following code accesses the mean function in multiple ways. Do they all point to the same underlying function object? 
+
+```{r}
+mean
+base::mean
+get("mean")
+evalq(mean)
+match.fun("mean")
+
+obj_addr(mean)
+obj_addr(base::mean)
+obj_addr(get("mean"))
+obj_addr(evalq(mean))
+obj_addr(match.fun("mean"))
+```
+
+
+They all do point to the same underlying function object
+
+
+#### 3
+
+By default, base R data import functions, like `read.csv()`, will automatically convert non-syntactic names to syntactic ones. Why might this be problematic? What option allows you to suppress this behaviour?
+
+This might be problematic when the column names are actually data points, this name conversion thus corrupts the data. You can use `check.names = F`
+
+#### 4
+
+What rules does make.names() use to convert non-syntactic names into syntactic ones?
