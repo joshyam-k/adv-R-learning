@@ -8,6 +8,8 @@ editor: visual
 library(lobstr)
 ```
 
+## Binding Basics
+
 ```{r}
 x <- c(1, 2, 3)
 ```
@@ -28,7 +30,7 @@ we don't get a new copy of the object, but a second binding to that original obj
 obj_addr(x) == obj_addr(y)
 ```
 
-## Exercises
+### Exercises
 
 #### 1
 
@@ -71,6 +73,73 @@ By default, base R data import functions, like `read.csv()`, will automatically 
 
 This might be problematic when the column names are actually data points, this name conversion thus corrupts the data. You can use `check.names = F`
 
-#### 4
 
-What rules does make.names() use to convert non-syntactic names into syntactic ones?
+## Copy on Modify
+
+```{r}
+x <- c(1, 2, 3)
+y <- x
+
+y[[3]] <- 4
+```
+
+
+Here x and y originally point to the same object, but when y is modified R makes a copy of the original object, this time with one item changed and rebinds y to that object. It can help to think of R objects as immutable or unchangeable.
+
+Like vectors, lists use copy-on-modify behavior; the original list is left unchanged, and R creates a modified copy. This, however, is a shallow copy: the list object and its bindings are copied, but the values pointed to by the bindings are not.
+
+Data frames are lists of vectors, so copy-on-modify has important consequences when you modify a data frame.
+
+```{r}
+d1 <- data.frame(x = c(1, 5, 6), y = c(2, 4, 3))
+d2 <- d1
+d2[, 2] <- d2[, 2] * 2
+```
+
+since we only modified one column then only that column must be modified, all other bindings point to the original objects
+
+### Exercises 
+
+#### 1
+
+Why is tracemem(1:10) not useful?
+
+It isn't useful because there is no name that points to that object. When 1:10 is called an object with an address is indeed created, but since it has no name that points to it, it isn't useful to track the object.
+
+#### 2
+
+Explain why tracemem() shows two copies when you run this code. Hint: carefully look at the difference between this code and the code shown earlier in the section.
+
+```{r}
+x <- c(1L, 2L, 3L)
+tracemem(x)
+
+x[[3]] <- 4
+```
+
+We see copy on modify behavior here because the original values in the object are integers and the modification is to change one of those values to a double.
+
+#### 3
+
+Sketch out the relationship between the following objects:
+
+```{r}
+a <- 1:10
+b <- list(a, a)
+c <- list(b, a, 1:10)
+```
+
+a references the object 1:10 with an address say j. b references an object where each item in the object references object j. finally c has a reference to b and a reference to a as well as a reference to a new object 1:10 with a different address.
+
+
+## Object Size
+
+```{r}
+x <- runif(1e6)
+obj_size(x)
+
+y <- list(x, x, x)
+obj_size(y)
+```
+
+note that these are almost the same size because of the fact that elements in lists are references to values.
