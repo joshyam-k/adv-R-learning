@@ -1,0 +1,39 @@
+---
+title: "vectors"
+format: html
+editor: visual
+---
+
+Vectors come in two flavors: atomic vectors and lists. Every vector can also have attributes which is a named list of arbitrary metadata. The dimension attribute turns vectors into matrices and arrays, and the class attribute powers the S3 object system.
+
+## Atomic Vectors
+
+4 main types: logical, integer, double, and character. 2 rare types: complex and raw (won't really need these)
+
+When the inputs are atomic vectors, c() always creates another atomic vector; i.e. it flattens:
+
+```{r}
+c(c(1,2), c(3,4))
+```
+
+you can use `typeof()` to determine the type of a vector
+
+```{r}
+typeof(c(1L,2L,3L))
+```
+
+R represents missing values with NA.  Missing values tend to be infectious: most computations involving a missing value will return another missing value.
+
+```{r}
+NA > 5
+```
+
+For atomic vectors, type is a property of the entire vector: all elements must be the same type. When you attempt to combine different types they will be coerced in a fixed order: character -> double -> integer ->  logical
+
+```{r}
+c("a", 1)
+c(5L, TRUE)
+```
+
+## Attributes
+
