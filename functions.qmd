@@ -93,5 +93,5 @@ Scoping: the act of finding a value associated with a name
 Lexing scoping means that R looks up the values of a name based on how a function is defined, not just on how it is called. Parse-time rather than run-time structure
 
 - name masking: names defined inside of a function mask names defined outside of a function. First, R looks inside the current function. Then, it looks where that function was defined (and so on, all the way up to the global environment). Finally, it looks in other loaded packages.
-- functions vs variables: 
+- a fresh start: everytime a function is called, a new environment is created to host it's execution.
 
