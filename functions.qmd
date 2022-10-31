@@ -8,13 +8,11 @@ editor: visual
 library(tidyverse)
 ```
 
-
 ### Function Fundamentals
 
-While the formals and body are specified explicitly when you create a function, the environment is specified implicitly, based on where you defined the function.
-- Primitive functons like `[` and `sum()` are exceptions as they call C code directly
+While the formals and body are specified explicitly when you create a function, the environment is specified implicitly, based on where you defined the function. - Primitive functons like `[` and `sum()` are exceptions as they call C code directly
 
-Importantly, R functions are objects themselves. If you choose not to give a function a name, you get an anonymous function. In R, you’ll often see functions called closures. This name reflects the fact that R functions capture, or enclose, their environments.
+Importantly, R functions are objects themselves. If you choose not to give a function a name, you get an anonymous function. In R, you'll often see functions called closures. This name reflects the fact that R functions capture, or enclose, their environments.
 
 #### Invoking a function
 
@@ -27,11 +25,11 @@ do.call(mean, args)
 
 #### Exercises
 
-1. Given a name, like "mean", `match.fun()` lets you find a function. Given a function, can you find its name? Why doesn’t that make sense in R?
+1.  Given a name, like "mean", `match.fun()` lets you find a function. Given a function, can you find its name? Why doesn't that make sense in R?
 
-Well there is no one-to-one mapping between functions and names. 
+Well there is no one-to-one mapping between functions and names.
 
-2. It’s possible (although typically not useful) to call an anonymous function. Which of the two approaches below is correct? Why?
+2.  It's possible (although typically not useful) to call an anonymous function. Which of the two approaches below is correct? Why?
 
 ```{r, eval=F}
 function(x) 3()
@@ -42,12 +40,11 @@ function(x) 3()
 
 The second approach seems to be the correct one because the parentheses help define the function body before calling it.
 
-3. What function allows you to tell if an object is a function? What function allows you to tell if a function is a primitive function?
+3.  What function allows you to tell if an object is a function? What function allows you to tell if a function is a primitive function?
 
 Not sure about this one. `is.function(x)` and `is.primitive()` both seem to say in their documentation that they check for whether their arguments are primitive functions.
 
-
-4. This code makes a list of all functions in the base package.
+4.  This code makes a list of all functions in the base package.
 
 ```{r}
 objs <- mget(ls("package:base", all = TRUE), inherits = TRUE)
@@ -56,7 +53,7 @@ funs <- Filter(is.function, objs)
 
 Use it to answer the following questions:
 
-- Which base function has the most arguments?
+-   Which base function has the most arguments?
 
 ```{r}
 funs %>% 
@@ -65,8 +62,7 @@ funs %>%
   head(1)
 ```
 
-
-- How many base functions have no arguments? What’s special about those functions?
+-   How many base functions have no arguments? What's special about those functions?
 
 ```{r}
 funs %>% 
@@ -78,9 +74,10 @@ funs %>%
   
   
 ```
+
 only 47, and most are primitive.
 
-- How could you adapt the code to find all primitive functions?
+-   How could you adapt the code to find all primitive functions?
 
 ```{r}
 prims <- Filter(is.primitive, objs)
@@ -92,6 +89,103 @@ Scoping: the act of finding a value associated with a name
 
 Lexing scoping means that R looks up the values of a name based on how a function is defined, not just on how it is called. Parse-time rather than run-time structure
 
-- name masking: names defined inside of a function mask names defined outside of a function. First, R looks inside the current function. Then, it looks where that function was defined (and so on, all the way up to the global environment). Finally, it looks in other loaded packages.
-- a fresh start: everytime a function is called, a new environment is created to host it's execution.
+-   name masking: names defined inside of a function mask names defined outside of a function. First, R looks inside the current function. Then, it looks where that function was defined (and so on, all the way up to the global environment). Finally, it looks in other loaded packages.
+-   a fresh start: everytime a function is called, a new environment is created to host it's execution.
+-   dynamic lookup: R looks for values when the function is run, not when the function is created
+
+### Lazy Evaluation
+
+R function arguments are only evaluated if they are accessed
+
+```{r}
+h01 <- function(x){
+  10
+}
+
+h01(stop("error!! danger!!"))
+```
+
+will never evaluate it's argument because it is never accessed.
+
+Promises have three components
+
+-   an expression (like x + y), which gives rise to the delayed evaluation
+-   an environment where the expression should be evaluated
+-   A value, which is computed and cached the first time a promise is accessed when the expression is evaluated in the specified environment.
+
+Default Arguments 
+
+- lazy evaluation allows default terms to be defined in terms of other arguments or even variables defined within a function *if* the arguments are accessed after those other variables have been defined
+
+
+#### Exercises
+
+1. What important property of `&&` makes `x_ok()` work?
+
+```{r}
+x_ok <- function(x) {
+  !is.null(x) && length(x) == 1 && x > 0
+}
+```
+
+`&&` only evaluates as many terms as it needs to. In other words, once it evaulates one expression to be false it will not continue to evaluate any of the further expressions and it will return false.
+
+What is different with this code? Why is this behaviour undesirable here?
+
+```{r}
+x_ok <- function(x) {
+  !is.null(x) & length(x) == 1 & x > 0
+}
+```
+
+`&` is vectorized meaning it will evaluate its arguments iteratively which is certainly not what we want here.
+
+2. What does this function return? Why? Which principle does it illustrate?
+
+```{r}
+f2 <- function(x = z) {
+  z <- 100
+  x
+}
+f2()
+```
+
+This function returns 100 and it illustrates the property of lazy evaluation which is powered by promises. The argument default is allowed to be set to a variable defined later because x is not evaluated until it is accessed.
+
+
+3. What does this function return? Why? Which principle does it illustrate?
+
+```{r}
+y <- 10
+f1 <- function(x = {y <- 1; 2}, y = 0) {
+  c(x, y)
+}
+f1()
+y
+```
+
+This function returns `c(2,1)` as well as 10 and it illustrates name masking. When x is accessed in `f1` inside of `c(x,y)` the expression `{y <- 1; 2}` is evaluated and y is set to 1 and x to 2. Thus when y is evaluated next in `c(x,y)` it finds 1 and R doesn't have to look any further up for it. 
+
+4. In hist(), the default value of xlim is range(breaks), the default value for breaks is "Sturges", and
+
+```{r}
+range("Sturges")
+```
+
+This one is pretty confusing to me, but I'm assuming that breaks is either overwritten or calculated in some way inside of the `hist()` function. This must happen before xlim is accessed, so the default value simply ensures that if an improper value for breaks is supplied then the function will break before xlim is evaluated.
+
+5. Explain why this function works. Why is it confusing?
+
+```{r}
+show_time <- function(x = stop("Error!")) {
+  stop <- function(...) Sys.time()
+  print(x)
+}
+show_time()
+```
+
+This function works because functions are themselves objects in R. Lazy evaluation means that `stop()` is overwritten before `x = stop("Error")` is evaluated, so when `print(x)` is evaluated it first looks in the function environemtn and finds our own function and uses it to print the system time.
+
+
+### `...` (dot-dot-dot)
 
