@@ -189,3 +189,27 @@ This function works because functions are themselves objects in R. Lazy evaluati
 
 ### `...` (dot-dot-dot)
 
+Two main uses
+
+- if your function takes a function as an argument, you want some way to pass additional arguments to that function
+
+- If your function is an S3 generic, you need some way to allow methods to take arbitrary extra arguments.
+
+
+### Exiting a function
+
+Most functions exit in one of two ways40: they either return a value, indicating success, or they throw an error, indicating failure.
+
+- returns can either be implicit or explicit
+
+#### Errors
+
+`on.exit()` is a cool function that allows you to add functionality that triggers when a function is exited. for example you can place cleanup code right next to the code that needs cleaning up instead of writing it much farther down in the function
+
+
+### Function Forms
+
+- everything that exists is an object
+- everything that happens is a function call
+
+
