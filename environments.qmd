@@ -29,3 +29,28 @@ Parent environments are what are used to implement lexical scoping, R looks into
 Super assignment `<<-` modifies an existing variable found in a parent environment (this feels like pointers in C).
 
 `rlang::env_*` contains a whole multitude of functions that can be used to modify or affect an environment
+
+
+### Special Environments
+
+#### Package Environments
+
+Each packaged attached by `library()` becomes one of the parents of the global environment. This works in sort of a insertion way, where the last loaded library is the immediate parent of the global environment.
+
+
+#### Function Environment
+
+A function binds the current environment when it is created (this is what enables lexical scoping)
+
+Functions that capture (or enclose) their environments are called closures (object of type closure is not subsettable :0)
+
+#### Namespaces
+
+Every function in a package is associated with a pair of environments: the package environment, which you learned about earlier, and the namespace environment.
+
+- package environment is the external interface of the package
+- namespace environment is the internal interface to the package. The package environment controls how we find the function; the namespace controls how the function finds its variables. (So cool!).
+
+So as long as you the user makes sure that you are using the right function, then any functions internal to that function will work correctly because of the namespace environment.
+
+Importantly, every binding in the package environment is also found in the namespace environment; this ensures every function can use every other function in the package. 
