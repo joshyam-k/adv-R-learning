@@ -54,3 +54,41 @@ Every function in a package is associated with a pair of environments: the packa
 So as long as you the user makes sure that you are using the right function, then any functions internal to that function will work correctly because of the namespace environment.
 
 Importantly, every binding in the package environment is also found in the namespace environment; this ensures every function can use every other function in the package. 
+
+
+#### Execution Environment
+
+ephemeral. after function completion, the environment will be garbage collected. In other words these work exactly how we expect they work.
+
+### Call Stacks
+
+very nice way to visualize how the call stack functions. I'm assuming that frames are popped from the stack in reverse order. (cst stands for call stack tree)
+
+```{r}
+f <- function(x) {
+  g(x = 2)
+}
+g <- function(x) {
+  h(x = 3)
+}
+h <- function(x) {
+  stop()
+}
+
+h <- function(x) {
+  lobstr::cst()
+}
+
+f(x = 1)
+```
+
+
+#### Frames
+
+A frame has 3 main components:
+
+- an expression giving the function call
+- an environment (typically the execution environment)
+- a parent (the previous frame in the call stack)
+
+
