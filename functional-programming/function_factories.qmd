@@ -1,0 +1,32 @@
+---
+title: "functional factories"
+format: html
+editor: visual
+---
+
+### Introduction
+
+Function factories are functions that make functions
+
+simple example:
+
+```{r}
+power1 <- function(exp) {
+  function(x) {
+    x ^ exp
+  }
+}
+
+square <- power1(2)
+cube <- power1(3)
+
+square(4)
+```
+
+`power1` is used to create child functions
+
+There are three components that make this possible
+
+- R has first class functions
+- In R a function captures (encloses) the environment in which it is created.
+- In R a function creates a new execution environment every time it is run
