@@ -4,5 +4,224 @@ format: html
 editor: visual
 ---
 
+## Introduction
 
+A functional is a function that takes a function as an input and returns a vector as an output (a common alternative to loops)
+
+### `purrr::map()`
+
+Takes a vector and a function, calls the function once for each element of the vector, and returns the results in a list.
+
+```{r}
+library(purrr)
+square <- function(x) x^2
+
+map(1:3, square)
+```
+
+In code this is roughly just doing
+
+```{r}
+simple_map <- function(x, f, ...) {
+  out <- vector("list", length(x))
+  for (i in seq_along(x)) {
+    out[[i]] <- f(x[[i]], ...)
+  }
+  out
+}
+```
+
+The trick here is that the preallocation of the output, as well as the filling by indexing with \[\[\]\] makes this code quite fast.
+
+If you don't want to return a list, there are several alternatives for returning an atomic vector: `map_lgl()`, `map_int()`, `map_dbl()`, and `map_chr()`.
+
+Importantly the `map_*()` functions can take any type of vector as input, since data frames are just vectors of vectors, map will apply the function provided to each column of the input data frame
+
+As you might expect, you can provide a custom function inline in `map()`. below we display both this functionality as well as using a data frame as input
+
+```{r}
+map_dbl(mtcars, function(x) length(unique(x)))
+```
+
+You can also simply use the shortcut
+
+```{r}
+map_dbl(mtcars, ~length(unique(.x)))
+```
+`map()` uses arguments .x and .f to avoid clashes that would certainly occur if it had arguments x and f and the function it calls has arguments x or f
+
+```{r}
+map(1:3, runif(2))
+```
+
+#### Exercises
+
+The following code uses a map nested inside another map to apply a function to every element of a nested list. Why does it fail, and what do you need to do to make it work?
+
+```{r}
+x <- list(
+  list(1, c(3, 9)),
+  list(c(3, 6), 7, c(4, 7, 6))
+)
+
+triple <- function(x) x * 3
+map(x, map, .f = triple)
+
+```
+
+this function fails because .f is being specified as being the function triple, this will be the function used by the outer map, and the inner map will be passed in the ... of the outer map
+
+we can fix this by just using an anonymous function
+
+```{r}
+map(x, ~ map(.x, triple))
+```
+
+
+
+Use map() to fit linear models to the mtcars dataset using the formulas stored in this list:
+
+```{r}
+formulas <- list(
+  mpg ~ disp,
+  mpg ~ I(1 / disp),
+  mpg ~ disp + wt,
+  mpg ~ I(1 / disp) + wt
+)
+
+map(formulas, lm, data = mtcars)
+```
+
+
+
+Fit the model mpg ~ disp to each of the bootstrap replicates of mtcars in the list below, then extract the R^2 of the model fit (Hint: you can compute the R^2 with summary().)
+
+```{r}
+bootstrap <- function(df) {
+  df[sample(nrow(df), replace = TRUE), , drop = FALSE]
+}
+
+bootstraps <- map(1:10, ~ bootstrap(mtcars))
+
+map_dbl(bootstraps, ~ summary(lm(mpg ~ disp, data = .x))$r.squared)
+
+# or
+
+map(bootstraps, ~ lm(mpg ~ disp, data = .x)) |>
+  map(summary) |>
+  map_dbl("r.squared")
+```
+
+### Map Variants
+
+#### Modify
+
+```{r}
+# returns a modified copy
+modify(mtcars, ~ .x * 2)
+```
+
+
+#### two inputs: map2
+
+suppose we want a weighted mean when we have a list of observations and a list of weights.
+
+```{r}
+xs <- map(1:8, ~ runif(10))
+xs[[1]][[1]] <- NA
+ws <- map(1:8, ~ rpois(10, 5) + 1)
+```
+
+since the ... arguments in map are not vectorized if we did
+
+```{r}
+map(xs, weighted.mean, ws)
+```
+
+it would fail because the entire list of weights gets passed to each iteration of the function on a singular x. map2 allows us to get around this by being vectorized on two arguments
+
+```{r}
+map2_dbl(xs, ws, weighted.mean)
+```
+
+
+The sytanx is that the two arguments come before the function
+
+
+A very basic implementation of map2 is as follows
+
+```{r}
+simple_map2 <- function(.x, .y, .f, ...) {
+  out <- vector("list", length = length(.x))
+  for (i in seq_along(.x)) {
+    out[[i]] <- .f(.x[[i]], .y[[i]], ...)
+  }
+  out
+}
+```
+
+
+One of the big differences between map2() and the simple function above is that map2() recycles its inputs to make sure that they’re the same length. this is really nice because it means that map2() will behave just like map() when needed.
+
+
+#### No outputs walk
+
+```{r}
+welcome <- function(x) {
+  cat("Welcome ", x, "!\n", sep = "")
+}
+names <- c("Hadley", "Jenny")
+```
+
+```{r}
+walk(names, welcome)
+```
+
+this is an especially helpful function when using functions that print, or write, or do an action that we don't want to store output for
+
+#### Iterating over values and indices
+
+`imap(x, f)` is equivalent to running `map2(x, names(x), f)`
+
+imap() is a useful helper if you want to work with the values in a vector along with their positions.
+
+
+#### Any number of inputs
+
+`map2(x, y, f)` is the same thing as `pmap(list(x,y), f)`
+
+here's how you could draw from runif with varying parameters
+
+```{r}
+params <- tibble::tribble(
+  ~ n, ~ min, ~ max,
+   1L,     0,     1,
+   2L,    10,   100,
+   3L,   100,  1000
+)
+
+pmap(params, runif)
+```
+
+
+#### Exercises
+
+Explain how the following code transforms a data frame using functions stored in a list.
+
+```{r}
+trans <- list(
+  disp = function(x) x * 0.0163871,
+  am = function(x) factor(x, labels = c("auto", "manual"))
+)
+
+nm <- names(trans)
+mtcars[nm] <- map2(trans, mtcars[nm], function(f, var) f(var))
+
+# this basically does this except with cleaner output
+.f <- function(f, var) f(var)
+out <- vector("list", length = length(trans))
+for(i in seq_along(trans)) {
+    out[[i]] <- .f(trans[[i]], mtcars[nm][[i]])
+}
+```
 
