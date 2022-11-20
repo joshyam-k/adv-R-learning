@@ -8,10 +8,10 @@ editor: visual
 
 Like a list, but with some important exceptions
 
-- every name must be unique
-- unordered
-- an environment has a parent
-- environments are not copied when modified
+-   every name must be unique
+-   unordered
+-   an environment has a parent
+-   environments are not copied when modified
 
 ```{r}
 e1 <- rlang::env(
@@ -22,7 +22,7 @@ e1 <- rlang::env(
 )
 ```
 
-The current environment, or `current_env()` is the environment in which code is currently executing. When you’re experimenting interactively, that’s usually the global environment, or `global_env()`.
+The current environment, or `current_env()` is the environment in which code is currently executing. When you're experimenting interactively, that's usually the global environment, or `global_env()`.
 
 Parent environments are what are used to implement lexical scoping, R looks into the parent environment if it does not find a variable in the current one. This goes up until we reach the global environment at which point we stop.
 
@@ -30,13 +30,11 @@ Super assignment `<<-` modifies an existing variable found in a parent environme
 
 `rlang::env_*` contains a whole multitude of functions that can be used to modify or affect an environment
 
-
 ### Special Environments
 
 #### Package Environments
 
 Each packaged attached by `library()` becomes one of the parents of the global environment. This works in sort of a insertion way, where the last loaded library is the immediate parent of the global environment.
-
 
 #### Function Environment
 
@@ -48,13 +46,12 @@ Functions that capture (or enclose) their environments are called closures (obje
 
 Every function in a package is associated with a pair of environments: the package environment, which you learned about earlier, and the namespace environment.
 
-- package environment is the external interface of the package
-- namespace environment is the internal interface to the package. The package environment controls how we find the function; the namespace controls how the function finds its variables. (So cool!).
+-   package environment is the external interface of the package
+-   namespace environment is the internal interface to the package. The package environment controls how we find the function; the namespace controls how the function finds its variables. (So cool!).
 
 So as long as you the user makes sure that you are using the right function, then any functions internal to that function will work correctly because of the namespace environment.
 
-Importantly, every binding in the package environment is also found in the namespace environment; this ensures every function can use every other function in the package. 
-
+Importantly, every binding in the package environment is also found in the namespace environment; this ensures every function can use every other function in the package.
 
 #### Execution Environment
 
@@ -82,13 +79,10 @@ h <- function(x) {
 f(x = 1)
 ```
 
-
 #### Frames
 
 A frame has 3 main components:
 
-- an expression giving the function call
-- an environment (typically the execution environment)
-- a parent (the previous frame in the call stack)
-
-
+-   an expression giving the function call
+-   an environment (typically the execution environment)
+-   a parent (the previous frame in the call stack)

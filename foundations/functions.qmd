@@ -113,14 +113,13 @@ Promises have three components
 -   an environment where the expression should be evaluated
 -   A value, which is computed and cached the first time a promise is accessed when the expression is evaluated in the specified environment.
 
-Default Arguments 
+Default Arguments
 
-- lazy evaluation allows default terms to be defined in terms of other arguments or even variables defined within a function *if* the arguments are accessed after those other variables have been defined
-
+-   lazy evaluation allows default terms to be defined in terms of other arguments or even variables defined within a function *if* the arguments are accessed after those other variables have been defined
 
 #### Exercises
 
-1. What important property of `&&` makes `x_ok()` work?
+1.  What important property of `&&` makes `x_ok()` work?
 
 ```{r}
 x_ok <- function(x) {
@@ -140,7 +139,7 @@ x_ok <- function(x) {
 
 `&` is vectorized meaning it will evaluate its arguments iteratively which is certainly not what we want here.
 
-2. What does this function return? Why? Which principle does it illustrate?
+2.  What does this function return? Why? Which principle does it illustrate?
 
 ```{r}
 f2 <- function(x = z) {
@@ -152,8 +151,7 @@ f2()
 
 This function returns 100 and it illustrates the property of lazy evaluation which is powered by promises. The argument default is allowed to be set to a variable defined later because x is not evaluated until it is accessed.
 
-
-3. What does this function return? Why? Which principle does it illustrate?
+3.  What does this function return? Why? Which principle does it illustrate?
 
 ```{r}
 y <- 10
@@ -164,9 +162,9 @@ f1()
 y
 ```
 
-This function returns `c(2,1)` as well as 10 and it illustrates name masking. When x is accessed in `f1` inside of `c(x,y)` the expression `{y <- 1; 2}` is evaluated and y is set to 1 and x to 2. Thus when y is evaluated next in `c(x,y)` it finds 1 and R doesn't have to look any further up for it. 
+This function returns `c(2,1)` as well as 10 and it illustrates name masking. When x is accessed in `f1` inside of `c(x,y)` the expression `{y <- 1; 2}` is evaluated and y is set to 1 and x to 2. Thus when y is evaluated next in `c(x,y)` it finds 1 and R doesn't have to look any further up for it.
 
-4. In hist(), the default value of xlim is range(breaks), the default value for breaks is "Sturges", and
+4.  In hist(), the default value of xlim is range(breaks), the default value for breaks is "Sturges", and
 
 ```{r}
 range("Sturges")
@@ -174,7 +172,7 @@ range("Sturges")
 
 This one is pretty confusing to me, but I'm assuming that breaks is either overwritten or calculated in some way inside of the `hist()` function. This must happen before xlim is accessed, so the default value simply ensures that if an improper value for breaks is supplied then the function will break before xlim is evaluated.
 
-5. Explain why this function works. Why is it confusing?
+5.  Explain why this function works. Why is it confusing?
 
 ```{r}
 show_time <- function(x = stop("Error!")) {
@@ -186,30 +184,25 @@ show_time()
 
 This function works because functions are themselves objects in R. Lazy evaluation means that `stop()` is overwritten before `x = stop("Error")` is evaluated, so when `print(x)` is evaluated it first looks in the function environemtn and finds our own function and uses it to print the system time.
 
-
 ### `...` (dot-dot-dot)
 
 Two main uses
 
-- if your function takes a function as an argument, you want some way to pass additional arguments to that function
+-   if your function takes a function as an argument, you want some way to pass additional arguments to that function
 
-- If your function is an S3 generic, you need some way to allow methods to take arbitrary extra arguments.
-
+-   If your function is an S3 generic, you need some way to allow methods to take arbitrary extra arguments.
 
 ### Exiting a function
 
 Most functions exit in one of two ways40: they either return a value, indicating success, or they throw an error, indicating failure.
 
-- returns can either be implicit or explicit
+-   returns can either be implicit or explicit
 
 #### Errors
 
 `on.exit()` is a cool function that allows you to add functionality that triggers when a function is exited. for example you can place cleanup code right next to the code that needs cleaning up instead of writing it much farther down in the function
 
-
 ### Function Forms
 
-- everything that exists is an object
-- everything that happens is a function call
-
-
+-   everything that exists is an object
+-   everything that happens is a function call

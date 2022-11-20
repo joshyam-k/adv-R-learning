@@ -30,3 +30,55 @@ There are three components that make this possible
 - R has first class functions
 - In R a function captures (encloses) the environment in which it is created.
 - In R a function creates a new execution environment every time it is run
+
+When `square()` executes `x^exp` it finds x in the execution environment and exp in the enclosing environment.
+
+Interesting lazy evaluation will give us bugs if we use a function factory like this
+
+```{r}
+x <- 2
+square <- power1(x)
+x <- 3
+
+square(2)
+```
+
+We'd expect 4 here, but since x is only lazily evaluated when `square()` is run, not when `power1()` is run. So since x is not accessed until `square()` is run then it finds it bound to 3.
+
+we can fix that by forcing power1 to evaluate it's argument when it is called
+
+```{r}
+power1_new <- function(exp){
+  force(exp)
+  function(x){
+    x ^ exp
+  }
+}
+
+x <- 2
+square_new <- power1_new(x)
+x <- 3
+square_new(2)
+```
+
+
+### Stateful functions
+
+Function factories allow you to maintain state across function invocations using the `<<-` operator
+
+```{r}
+counter <- function() {
+  i <- 0
+  function() {
+    i <<- i + 1
+    i
+  }
+}
+
+counter1 <- counter()
+
+counter1()
+```
+
+the `<<-` operator changes the binding in the enclosing environment of wherever it was called, in this case that is the execution environment of the counter function.
+
