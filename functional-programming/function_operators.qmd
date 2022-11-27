@@ -3,3 +3,75 @@ title: "function operators"
 format: html
 editor: visual
 ---
+
+A function operator is a function that takes one or more functions as input and returns a function as output. For example:
+
+```{r}
+chatty <- function(f) {
+  force(f)
+  
+  function(x, ...) {
+    res <- f(x, ...)
+    cat("Processing ", x, "\n", sep = "")
+    res
+  }
+}
+f <- function(x) x ^ 2
+s <- c(3, 2, 1)
+
+purrr::map_dbl(s, chatty(f))
+
+```
+
+```{r}
+library(purrr)
+library(memoise)
+```
+
+`safely()` is an example of a function operator
+
+```{r}
+safe_sum <- safely(sum)
+
+safe_sum
+```
+
+I will try to write a function operator that mimics what `safely()` does
+
+```{r}
+simple_safely <- function(.f) {
+  
+  .f <- as_mapper(.f)
+  
+  function(...) {
+    tryCatch(
+      expr = list(res = .f(...), err = NULL),
+      error = function(e) {
+        list(res = NULL, err = e)
+      }
+    )
+  }
+}
+
+
+safe_sum2 <- simple_safely(sum)
+
+safe_sum2(c(1,2,3))
+safe_sum2(c("josh yam"))
+```
+
+`memoise()` is another helpful function operator
+
+It memoises a function, meaning that the function will remember previous inputs and return cached results. Even though recursive fibonacci is almost always a bad way to write an algorithm we can show how memoise can optimize this process.
+
+```{r}
+fib <- memoise::memoise(function(n) {
+  if (n < 2) return(1)
+  fib(n - 2) + fib(n - 1)
+})
+
+system.time(fib(23))
+system.time(fib(24))
+
+```
+
