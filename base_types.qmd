@@ -1,6 +1,0 @@
----
-title: "Base types"
-format: html
-editor: visual
----
-

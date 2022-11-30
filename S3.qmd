@@ -1,0 +1,30 @@
+---
+title: "S3"
+format: html
+editor: visual
+---
+
+### Introduction
+
+```{r}
+library(sloop)
+```
+
+An S3 object is a base type with at least a class attribute. An S3 object behaves differently from its underlying base type whenever it's passed to a *generic function*
+
+
+### Classes
+
+Interestingly, S3 has no formal definition of a class, you simply set the class attribute to make an object an instance of that class.
+
+S3 has no checks for correctness which means you can change the class of existing objects (dangerous!)
+
+To avoid errors there are three main functions that you should provide when creating your own class
+
+- a constructor `new_myclass()` that creates objects with the correct structure
+- a validator `validate_myclass()`
+- A user-friendly helper, `myclass()`, that provides a convenient way for others to create objects of your class.
+
+#### Constructors
+
+
